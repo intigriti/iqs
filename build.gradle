@@ -1,5 +1,5 @@
 plugins {
-	id 'java'
+    id 'java'
 }
 
 group = 'com.intigriti.quickscope'
@@ -7,10 +7,10 @@ version = '1.0.0'
 sourceCompatibility = '17'
 
 repositories {
-	mavenCentral()
-	maven {
-		url 'https://repo.portswigger.net/'
-	}
+    mavenCentral()
+    maven {
+        url 'https://repo.portswigger.net/'
+    }
 }
 
 dependencies {
