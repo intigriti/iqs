@@ -69,4 +69,4 @@ To use this extension, you need an Intigriti API key:
 
 ## License
 
-[LICENSE]
+This project is licensed and available under the [MIT License](LICENSE.md).
