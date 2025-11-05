@@ -1,0 +1,119 @@
+name: Java Release (Gradle)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for tags
+      
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Get commit message
+        id: commit_message
+        run: echo "message=$(git log -1 --pretty=%B | head -n 1)" >> $GITHUB_OUTPUT
+        
+      - name: Determine version bump
+        id: version_bump
+        run: |
+          COMMIT_MSG="${{ steps.commit_message.outputs.message }}"
+          if [[ $COMMIT_MSG == feat:* ]]; then
+            echo "bump=minor" >> $GITHUB_OUTPUT
+            echo "Detected feature commit, will do minor version bump"
+          elif [[ $COMMIT_MSG == fix:* ]]; then
+            echo "bump=patch" >> $GITHUB_OUTPUT
+            echo "Detected fix commit, will do patch version bump"
+          else
+            echo "bump=none" >> $GITHUB_OUTPUT
+            echo "No version bump needed for this commit"
+            exit 0
+          fi
+      
+      - name: Get latest release tag
+        id: latest_tag
+        run: |
+          # Try to get the latest tag, default to 1.0.0 if none exists
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          
+          # Remove 'v' prefix if present
+          VERSION=${LATEST_TAG#v}
+          
+          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+          echo "Latest version tag: $VERSION"
+      
+      - name: Calculate new version
+        id: new_version
+        if: steps.version_bump.outputs.bump != 'none'
+        run: |
+          VERSION=${{ steps.latest_tag.outputs.tag }}
+          BUMP_TYPE=${{ steps.version_bump.outputs.bump }}
+          
+          # Split version into parts
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          
+          # Calculate new version based on bump type
+          if [[ "$BUMP_TYPE" == "minor" ]]; then
+            NEW_VERSION="${MAJOR}.$((MINOR + 1)).0"
+          elif [[ "$BUMP_TYPE" == "patch" ]]; then
+            NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
+          else
+            NEW_VERSION="${VERSION}"
+          fi
+          
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version will be: $NEW_VERSION"
+      
+      - name: Set up Gradle
+        if: steps.version_bump.outputs.bump != 'none'
+        uses: gradle/gradle-build-action@v3
+        
+      - name: Build with Gradle
+        if: steps.version_bump.outputs.bump != 'none'
+        run: gradle build
+        
+      - name: Find and rename JAR file
+        if: steps.version_bump.outputs.bump != 'none'
+        id: find_jar
+        run: |
+          # Find the main JAR file in the build directory
+          # Adjust the path if your Gradle build puts JARs elsewhere
+          JAR_FILE=$(find ./build/libs -name "*.jar" -not -name "*-sources.jar" -not -name "*-javadoc.jar" | head -n 1)
+          echo "Found JAR file: $JAR_FILE"
+          
+          # Create version-specific filename
+          VERSION="${{ steps.new_version.outputs.version }}"
+          NEW_FILENAME="quickscope-${VERSION}.jar"
+          NEW_PATH="./build/libs/${NEW_FILENAME}"
+          
+          # Copy the JAR to the new name
+          cp "$JAR_FILE" "$NEW_PATH"
+          echo "Renamed JAR to: $NEW_PATH"
+          
+          echo "jar_path=$NEW_PATH" >> $GITHUB_OUTPUT
+          echo "jar_filename=$NEW_FILENAME" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        if: steps.version_bump.outputs.bump != 'none'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.new_version.outputs.version }}
+          name: Release v${{ steps.new_version.outputs.version }}
+          body: |
+            Release v${{ steps.new_version.outputs.version }}
+            
+            ${{ steps.commit_message.outputs.message }}
+          files: ${{ steps.find_jar.outputs.jar_path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

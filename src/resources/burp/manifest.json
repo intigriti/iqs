@@ -1,0 +1,11 @@
+{
+	"name": "Intigriti Quick Scope",
+	"version": "1.0.0",
+	"extensionClass": "com.quickscope.QuickScopeExtension",
+	"entryPoint": "com.quickscope.QuickScopeExtension",
+	"minBurpVersion": "2023.1",
+	"apiVersion": "2",
+	"description": "Automatically imports target scope from Intigriti bug bounty programs using the Intigriti Researcher API.",
+	"author": "Intigriti.com",
+	"categories": ["intigriti", "bugbounty", "automation", "intigriti-researcher-api"]
+}

@@ -1,0 +1,44 @@
+plugins {
+	id 'java'
+}
+
+group = 'com.intigriti.quickscope'
+version = '1.0.0'
+sourceCompatibility = '17'
+
+repositories {
+	mavenCentral()
+	maven {
+		url 'https://repo.portswigger.net/'
+	}
+}
+
+dependencies {
+	compileOnly 'net.portswigger.burp.extensions:montoya-api:2025.5'
+	implementation 'com.google.code.gson:gson:2.13.1'
+	implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.16'
+}
+
+// Simple JAR configuration
+jar {
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	
+	manifest {
+		attributes(
+			'Main-Class': 'com.intigriti.quickscope',
+			'Implementation-Title': 'Intigriti QuickScope',
+			'Implementation-Version': project.version
+		)
+	}
+}
+
+/*
+@TODO: Write tests
+
+test {
+	useJUnitPlatform()
+}
+*/
