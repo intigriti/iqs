@@ -2,9 +2,9 @@
 
 Intigriti Quick Scope is a Burp Suite extension that automates project setup by pulling data from the Intigriti Researcher API. This extension makes it easy to import target scopes from bug bounty programs directly into Burp Suite.
 
-Intigriti Quick Scope is capable of:
-- Applying target scope settings (including in-scope and out-of-scope rules)
-- Adding mandatory scope request headers to Burp Suite (such as the User-Agent header)
+[Learn more](https://www.intigriti.com/blog/news/introducing-intigriti-quickscope-burpsuite-extension)
+
+![Intigriti Quick Scope](.github/assets/images/intigriti-quick-scope.png)
 
 ## Features
 - Fetch available programs (private & public) from Intigriti using the Intigriti Researcher API
