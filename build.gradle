@@ -16,7 +16,6 @@ repositories {
 dependencies {
 	compileOnly 'net.portswigger.burp.extensions:montoya-api:2026.4'
 	implementation 'com.google.code.gson:gson:2.13.2'
-	implementation 'com.squareup.okhttp3:okhttp:5.3.2'
 }
 
 jar {
