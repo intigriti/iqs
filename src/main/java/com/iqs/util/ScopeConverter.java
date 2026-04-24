@@ -48,48 +48,31 @@ public class ScopeConverter {
 		this.requirementsManager.setUsername(quickScopeConfig.getUsername());
 	}
 
-	/**
-	 * Adds a list of domains to Burp's scope based on their tier value
-	 * 
-	 * @param domains The domains to add
-	 * @return The number of domains successfully processed
-	 */
 	public int addDomainsToScope(List<Domain> domains) {
-		int successCount = 0;
-		List<Domain> includeList = new ArrayList<>();
-		List<Domain> excludeList = new ArrayList<>();
+		Map<Domain, Boolean> targets = new java.util.LinkedHashMap<>();
 		Map<String, String> invalidEndpoints = new HashMap<>(); // Maps endpoint to reason
 
-		// Separate domains into include and exclude lists based on tier
+		// Validate and classify every domain
 		for (Domain domain : domains) {
 			String endpoint = domain.getEndpoint();
 
-			// Validate endpoint
-			AdvancedScopeUtil.ValidationResult validationResult = 
+			AdvancedScopeUtil.ValidationResult validationResult =
 				advancedScopeUtil.validateEndpoint(endpoint);
 
 			logging.logToOutput("Is Valid: " + endpoint + "," +
 				(validationResult.isValid() ? "valid" : "invalid") +
 				"," + validationResult.getReadableType());
-			
+
 			if (!validationResult.isValid()) {
-				// Store endpoint and the reason it's invalid
 				invalidEndpoints.put(endpoint, validationResult.getReadableType());
 				continue;
 			}
 
-			// Add domains to include in scope
-			boolean exclude = isOutOfScopeDomain(domain); 
-			if (advancedScopeUtil.addTargetToScope(domain, !exclude)) {
-				successCount++;
-			}
+			boolean include = !isOutOfScopeDomain(domain);
+			targets.put(domain, include);
 		}
 
-		// Log the split
-		logging.logToOutput("Processing " + includeList.size() + " domains to include and "
-				+ excludeList.size() + " domains to exclude");
-
-		return successCount;
+		return advancedScopeUtil.addTargetsToScope(targets);
 	}
 
 	/**
