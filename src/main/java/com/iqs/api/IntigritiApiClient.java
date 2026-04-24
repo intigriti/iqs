@@ -162,7 +162,7 @@ public class IntigritiApiClient {
 
 		HttpRequestResponse result = api.http().sendRequest(
 			request,
-			RequestOptions.requestOptions().withUpstreamTlsVerification()
+			RequestOptions.requestOptions().withUpstreamTLSVerification()
 		);
 
 		HttpResponse response = result.response();
