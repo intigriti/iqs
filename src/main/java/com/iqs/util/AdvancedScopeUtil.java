@@ -37,30 +37,66 @@ public class AdvancedScopeUtil {
 	}
 
 	/**
-	 * Add a target specifically to the include scope
-	 * 
-	 * @param target The target domain to include
-	 * @param include Whether to include or exclude the target
-	 * @return true if successful
+	 * Add targets to the include scope
+	 *
+	 * @param targets A map of domains to a boolean indicating whether the
+	 *                target should be included (true) or excluded (false).
+	 * @return The number of rules that were successfully added.
 	 */
-	public boolean addTargetToScope(Domain target, boolean include) {
-		String endpoint = target.getEndpoint();
-		if (endpoint == null || endpoint.isEmpty()) {
-			return false;
+	public int addTargetsToScope(java.util.Map<Domain, Boolean> targets) {
+		if (targets == null || targets.isEmpty()) {
+			return 0;
 		}
 
 		try {
-			// Process the endpoint into a proper URL pattern
-			String urlPattern = generateRegexPattern(endpoint);
-			if (urlPattern == null) {
-				return false;
+			String projectOptionsJson = api.burpSuite().exportProjectOptionsAsJson();
+			JsonObject projectOptions = JsonParser.parseString(projectOptionsJson).getAsJsonObject();
+
+			JsonObject targetScope = getOrCreateTargetScope(projectOptions);
+
+			if (!targetScope.has("exclude")) {
+				targetScope.add("exclude", new JsonArray());
+			}
+			JsonArray includeArray = targetScope.getAsJsonArray("include");
+			JsonArray excludeArray = targetScope.getAsJsonArray("exclude");
+
+			int added = 0;
+			for (java.util.Map.Entry<Domain, Boolean> entry : targets.entrySet()) {
+				Domain target = entry.getKey();
+				boolean include = entry.getValue();
+
+				String endpoint = target.getEndpoint();
+				if (endpoint == null || endpoint.isEmpty()) {
+					continue;
+				}
+
+				try {
+					String urlPattern = generateRegexPattern(endpoint);
+					if (urlPattern == null) {
+						continue;
+					}
+
+					JsonObject rule = new JsonObject();
+					rule.addProperty("enabled", true);
+					rule.addProperty("host", urlPattern);
+					rule.addProperty("protocol", "any");
+
+					(include ? includeArray : excludeArray).add(rule);
+					added++;
+				} catch (Exception e) {
+					logging.logToError("Error adding target to scope: "
+						+ endpoint + "," + e.getMessage());
+				}
 			}
 
-			logging.logToOutput("Adding to scope: " + urlPattern);
-			return addScopeRule(urlPattern, true, include);
+			logging.logToOutput("Importing " + added + " scope rule(s) into project options");
+			api.burpSuite().importProjectOptionsFromJson(gson.toJson(projectOptions));
+
+			return added;
 		} catch (Exception e) {
-			logging.logToError("Error adding target to scope: " + endpoint + "," + e.getMessage());
-			return false;
+			logging.logToError("Error adding scope rules in batch: " + e.getMessage());
+			e.printStackTrace();
+			return 0;
 		}
 	}
 
@@ -111,120 +147,52 @@ public class AdvancedScopeUtil {
 			lower.contains("/in/developer/") ||
 			lower.contains("itunes.apple");
 	}
-	
-	/**
-	 * Add a regex pattern to the target scope
-	 * 
-	 * @param regexPattern The regex pattern to add
-	 * @param enabled Whether the rule is enabled
-	 * @param include Whether to include or exclude the pattern
-	 * @return true if successful
-	 */
-	public boolean addScopeRule(String regexPattern, boolean enabled, boolean include) {
-		try {
-			// Get current project options
-			String projectOptionsJson = api.burpSuite().exportProjectOptionsAsJson();
-			logging.logToOutput("Exported project options JSON");
-			
-			// Parse the JSON
-			logging.logToOutput("Parsing project options JSON");
-			JsonObject projectOptions = JsonParser.parseString(projectOptionsJson).getAsJsonObject();
-			logging.logToOutput("Successfully parsed project options JSON");
-			
-			// Get or create the target scope section
-			JsonObject targetScope = getOrCreateTargetScope(projectOptions);
-			
-			// Get the advanced scope rules
-			JsonArray advancedModeRules = targetScope.getAsJsonArray(include ? "include" : "exclude");
-			
-			// Create new rule
-			JsonObject newRule = new JsonObject();
-			newRule.addProperty("enabled", enabled);
-			newRule.addProperty("host", regexPattern);
-			newRule.addProperty("protocol", "any");
-			
-			// Add the rule to the array
-			advancedModeRules.add(newRule);
-			
-			// Prepare the JSON for import
-			String updatedJson = gson.toJson(projectOptions);
-			
-			// Log the relevant section for debugging
-			try {
-				JsonObject debugScope = JsonParser.parseString(updatedJson)
-					.getAsJsonObject()
-					.getAsJsonObject("target")
-					.getAsJsonObject("scope");
-			} catch (Exception e) {
-				logging.logToOutput("Could not extract scope section for debug output");
-			}
-			
-			// Import the updated project options
-			logging.logToOutput("Importing updated project options");
-			api.burpSuite().importProjectOptionsFromJson(updatedJson);
 
-			return true;
-		} catch (Exception e) {
-			logging.logToError("Error adding scope rule: " + e.getMessage());
-			e.printStackTrace();
-			return false;
-		}
-	}
-	
 	/**
-	 * Clear all scope rules and reset to a new set of rules
-	 * 
+	 * Clear all scope rules and reset to a new set of rules.
+	 *
 	 * @param includePatterns Patterns to include in scope
 	 * @param excludePatterns Patterns to exclude from scope
 	 * @return true if successful
 	 */
 	public boolean resetScopeRules(List<String> includePatterns, List<String> excludePatterns) {
 		try {
-			// Get current project options
 			String projectOptionsJson = api.burpSuite().exportProjectOptionsAsJson();
-			
-			// Parse the JSON
 			JsonObject projectOptions = JsonParser.parseString(projectOptionsJson).getAsJsonObject();
-			
-			// Get or create the target scope section
+
 			JsonObject targetScope = getOrCreateTargetScope(projectOptions);
-			
-			// Create new rules array
-			JsonArray advancedModeRules = new JsonArray();
-			
-			// Add include patterns
+
+			// Build the two arrays separately
+			JsonArray includeRules = new JsonArray();
 			for (String pattern : includePatterns) {
 				JsonObject rule = new JsonObject();
 				rule.addProperty("enabled", true);
 				rule.addProperty("host", pattern);
 				rule.addProperty("protocol", "any");
-				advancedModeRules.add(rule);
+				includeRules.add(rule);
 			}
-			
-			// Add exclude patterns
+
+			JsonArray excludeRules = new JsonArray();
 			for (String pattern : excludePatterns) {
 				JsonObject rule = new JsonObject();
 				rule.addProperty("enabled", true);
 				rule.addProperty("host", pattern);
-				rule.addProperty("protocol", "exclude");
-				advancedModeRules.add(rule);
+				rule.addProperty("protocol", "any");
+				excludeRules.add(rule);
 			}
-			
-			// Update the JSON
-			targetScope.add("include", advancedModeRules);
-			targetScope.add("exclude", advancedModeRules);
-			
+
+			// Replace whatever was under "include" / "exclude" with new arrays
+			targetScope.add("include", includeRules);
+			targetScope.add("exclude", excludeRules);
+
 			// Enable advanced mode
 			targetScope.addProperty("advanced_mode", true);
-			
-			// Prepare the JSON for import
-			String updatedJson = gson.toJson(projectOptions);
-			
+
 			// Import the updated project options
 			logging.logToOutput("Importing updated project options");
-			api.burpSuite().importProjectOptionsFromJson(updatedJson);
-			
-			logging.logToOutput("Reset scope rules with " + includePatterns.size() + 
+			api.burpSuite().importProjectOptionsFromJson(gson.toJson(projectOptions));
+
+			logging.logToOutput("Reset scope rules with " + includePatterns.size() +
 								" include and " + excludePatterns.size() + " exclude rules");
 			return true;
 		} catch (Exception e) {
