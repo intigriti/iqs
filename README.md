@@ -74,4 +74,4 @@ Scope Guard is open-source and made for the community! We encourage you to contr
 
 # License
 
-This project is licensed and available under the [MIT License](docs/LICENSE.md).
+This project is licensed and available under the [MIT License](docs/LICENSE.md)
