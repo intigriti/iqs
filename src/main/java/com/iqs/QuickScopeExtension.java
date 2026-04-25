@@ -5,7 +5,6 @@ import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.extension.ExtensionUnloadingHandler;
 import burp.api.montoya.logging.Logging;
 import burp.api.montoya.ui.UserInterface;
-import burp.api.montoya.ui.menu.MenuItem;
 
 import com.iqs.config.ExtensionConfig;
 import com.iqs.ui.ConfigPanel;
