@@ -77,10 +77,6 @@ public class QuickScopeExtension implements BurpExtension, ExtensionUnloadingHan
 		
 		// Register the main panel as a tab in Burp's UI
 		userInterface.registerSuiteTab(EXTENSION_NAME, mainPanel);
-		
-		// Add a context menu item
-		MenuItem menuItem = MenuItem.basicMenuItem("Import to IQS");
-		// @TODO: Add action for context menu??
 	}
 	
 	@Override

@@ -89,28 +89,6 @@ public class ScopeConverter {
 		}
 		return false;
 	}
-
-	/**
-	 * Gets the current scope rules
-	 * 
-	 * @return List of scope rules
-	 */
-	public List<String> getScopeRules() {
-		List<Object[]> rules = advancedScopeUtil.getCurrentScopeRules();
-		
-		// Convert to readable format for display
-		return rules.stream()
-			.map(rule -> {
-				boolean enabled = (boolean) rule[0];
-				String pattern = (String) rule[1];
-				String type = (String) rule[2];
-				
-				return (enabled ? "✓ " : "✗ ") + 
-					   (type.equals("include") ? "[+] " : "[-] ") + 
-					   pattern;
-			})
-			.collect(Collectors.toList());
-	}
 	
 	/**
 	 * Clears the current scope
@@ -118,15 +96,6 @@ public class ScopeConverter {
 	public void clearScope() {
 		advancedScopeUtil.clearScope();
 		requirementsManager.resetRules();
-	}
-	
-	/**
-	 * Adds a scope change handler
-	 * 
-	 * @param handler The handler to add
-	 */
-	public void addScopeChangeHandler(ScopeChangeHandler handler) {
-		scope.registerScopeChangeHandler(handler);
 	}
 
 	/**

@@ -212,68 +212,6 @@ public class AdvancedScopeUtil {
 	}
 	
 	/**
-	 * Get all current scope rules
-	 * 
-	 * @return A list of current scope rules as [enabled, pattern, type]
-	 */
-	public List<Object[]> getCurrentScopeRules() {
-		List<Object[]> rules = new ArrayList<>();
-		
-		try {
-			// Get current project options
-			String projectOptionsJson = api.burpSuite().exportProjectOptionsAsJson();
-			
-			// Parse the JSON
-			JsonObject projectOptions = JsonParser.parseString(projectOptionsJson).getAsJsonObject();
-			
-			try {
-				// Try to get the target scope section if it exists
-				JsonObject target = null;
-				if (projectOptions.has("target")) {
-					target = projectOptions.getAsJsonObject("target");
-				}
-				
-				if (target != null && target.has("scope")) {
-					JsonObject targetScope = target.getAsJsonObject("scope");
-					
-					// Check if advanced mode is enabled
-					boolean advancedMode = targetScope.has("advanced_mode") ? 
-						targetScope.get("advanced_mode").getAsBoolean() : false;
-						
-					// Log advanced mode status
-					logging.logToOutput("Advanced scope mode is " + (advancedMode ? "enabled" : "disabled"));
-					
-					// Get the advanced scope rules
-					if (targetScope.has("include")) {
-						JsonArray advancedModeRules = targetScope.getAsJsonArray("include");
-						
-						for (JsonElement element : advancedModeRules) {
-							JsonObject rule = element.getAsJsonObject();
-							boolean enabled = rule.get("enabled").getAsBoolean();
-							String pattern = rule.get("host").getAsString();
-							String type = rule.get("protocol").getAsString();
-							
-							rules.add(new Object[]{enabled, pattern, type});
-						}
-					} else {
-						logging.logToOutput("No advanced scope rules found");
-					}
-				} else {
-					logging.logToOutput("No scope configuration found");
-				}
-			} catch (Exception e) {
-				logging.logToError("Error processing scope rules: " + e.getMessage());
-				e.printStackTrace();
-			}
-		} catch (Exception e) {
-			logging.logToError("Error getting scope rules: " + e.getMessage());
-			e.printStackTrace();
-		}
-		
-		return rules;
-	}
-	
-	/**
 	 * Initialize or get the target scope section from project options
 	 * 
 	 * @param projectOptions The project options JSON object
