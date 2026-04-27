@@ -1,10 +1,10 @@
 Uuid: 8e0a61f11d4d4e4aba25137eea1e1164
 ExtensionType: 1
-Name: Intigriti Quick Scope (IQS)
+Name: Intigriti Quick Scope
 RepoName: intigriti-quick-scope
 ScreenVersion: 1.0.0
 SerialVersion: 1
-MinPlatformVersion: 30
+MinPlatformVersion: 4
 ProOnly: False
 Author: INTIGRITI
 ShortDescription: Imports Intigriti bug bounty program scopes into Burp Suite.

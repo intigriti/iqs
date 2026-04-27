@@ -1,24 +1,25 @@
-<p>Intigriti Quick Scope (IQS) is an extension that automates bug bounty project and scope setup by fetching program data directly from the Intigriti Researcher API. It allows researchers to import in-scope and out-of-scope domains from their Intigriti programs, including private ones, without manual configuration.</p>
+<p>Intigriti Quick Scope (IQS) is an extension that automates bug bounty project and scope setup by fetching program
+  data directly from the Intigriti Researcher API. It allows researchers to import in-scope and out-of-scope domains
+  from their Intigriti programs, including private ones, without manual configuration.</p>
 
 <h2>Features</h2>
 <ul>
-  <li>Fetches all available Intigriti programs, including private programs, using your API credentials.</li>
-  <li>Applies an entire programs scope configuration in a single click.</li>
-  <li>Organizes domains into tabs by type: Web, Others (iOS, Android, source code repositories, etc.), and Out of Scope.</li>
+  <li>Fetches all available Intigriti programs, including private programs.</li>
+  <li>Auto-configure your project scope with a single click.</li>
   <li>Supports adding individual selected domains to the active scope rather than importing all at once.</li>
   <li>Automatically inserts your username into required scope headers when a program mandates them.</li>
   <li>Displays program-level scope requirements such as mandatory request headers and rate limits.</li>
-  <li>Provides a Reset Scope button to clear all scope filters and headers and start fresh with a different program.</li>
 </ul>
 
 <h2>Usage</h2>
 <ol>
   <li>Open the IQS tab and enter your Intigriti username and API key in the configuration fields.</li>
-  <li>Click <code class=InlineCode>Test Researcher API</code> to verify your credentials are working correctly.</li>
-  <li>Click <code class=InlineCode>Load Programs</code> to retrieve your available programs from the Intigriti API.</li>
+  <li>Click "Test Researcher API" to verify your credentials are working correctly.</li>
+  <li>Click "Load Programs" to retrieve your available programs from the Intigriti API.</li>
   <li>Use the filters to narrow the program list by active, followed, or private status.</li>
   <li>Select a program to view its domain details, organized across the Web, Others, and Out of Scope tabs.</li>
   <li>Click individual domains to add them selectively to your scope, or apply the full program scope at once.</li>
-  <li>If the program requires scope headers, confirm that your username has been automatically inserted into the relevant header fields.</li>
-  <li>To switch programs or start over, click <code class=InlineCode>Reset Scope</code> to clear all current scope filters and headers.</li>
+  <li>If the program requires scope headers, confirm that your username has been automatically inserted into the
+    relevant header fields.</li>
+  <li>To switch programs or start over, click "Reset Scope" to clear all current scope filters and headers.</li>
 </ol>
