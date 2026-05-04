@@ -34,7 +34,9 @@ public class RequirementsManager {
 			.replace("{username}", username)
 			.replace("<Username>", username)
 			.replace("<username>", username)
-			.replace("<RESEARCHER>", username);
+			.replace("<RESEARCHER>", username)
+			.replace("(username)", username)
+			.replace("(USERNAME)", username);
 	}
 
 	/**

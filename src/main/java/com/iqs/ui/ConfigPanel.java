@@ -15,6 +15,8 @@ import com.iqs.util.ScopeConverter;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -332,6 +334,32 @@ public class ConfigPanel extends JPanel {
 	 * Sets up event handlers for UI components
 	 */
 	private void setupEventHandlers() {
+		usernameField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) { syncUsername(); }
+			@Override
+			public void removeUpdate(DocumentEvent e) { syncUsername(); }
+			@Override
+			public void changedUpdate(DocumentEvent e) { syncUsername(); }
+
+			private void syncUsername() {
+				quickScopeConfig.setUsername(usernameField.getText());
+			}
+		});
+
+		apiKeyField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) { syncApiKey(); }
+			@Override
+			public void removeUpdate(DocumentEvent e) { syncApiKey(); }
+			@Override
+			public void changedUpdate(DocumentEvent e) { syncApiKey(); }
+
+			private void syncApiKey() {
+				quickScopeConfig.setApiKey(apiKeyField.getText());
+			}
+		});
+
 		// Test connection button
 		testConnectionButton.addActionListener(e -> {
 			// Update the configuration with the current values
