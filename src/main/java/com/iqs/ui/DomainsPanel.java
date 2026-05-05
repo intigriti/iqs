@@ -465,8 +465,8 @@ public class DomainsPanel extends JPanel {
 						.getContent().getTestingRequirements().getAutomatedTooling();
 
 				// Check for required scope headers
-            	headersRequired = details.getRulesOfEngagement()
-						.getContent().getTestingRequirements().getRequestHeader() != "" ||
+				headersRequired = details.getRulesOfEngagement()
+						.getContent().getTestingRequirements().getUserAgent() != "" ||
 						details.getRulesOfEngagement()
 						.getContent().getTestingRequirements().getRequestHeader() != "";
 			}
