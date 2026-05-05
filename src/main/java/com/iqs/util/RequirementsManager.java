@@ -116,41 +116,42 @@ public class RequirementsManager {
 		}
 	}
 
+	/**
+	 * Builds a single match-and-replace rule object with the standard IQS comment.
+	 */
+	private JsonObject buildRule(String stringMatch, String stringReplace) {
+		JsonObject rule = new JsonObject();
+		rule.addProperty("enabled", true);
+		rule.addProperty("is_simple_match", false);
+		rule.addProperty("rule_type", "request_header");
+		rule.addProperty("string_match", stringMatch);
+		rule.addProperty("string_replace", stringReplace);
+		rule.addProperty("comment", "Added by IQS (Intigriti Quick Scope)");
+		return rule;
+	}
+
+	/**
+	 * Ensures the proxy.match_replace_rules array exists on the given root object
+	 * and returns it. Mutates rootObj as needed.
+	 */
+	private JsonArray ensureMatchReplaceRulesArray(JsonObject rootObj) {
+		if (!rootObj.has("proxy")) {
+			rootObj.add("proxy", new JsonObject());
+		}
+		JsonObject proxy = rootObj.getAsJsonObject("proxy");
+		if (!proxy.has("match_replace_rules")) {
+			proxy.add("match_replace_rules", new JsonArray());
+		}
+		return proxy.getAsJsonArray("match_replace_rules");
+	}
+
 	private JsonObject addUserAgentRule(JsonObject rootObj, String userAgent) {
 		try {
-			if (!rootObj.has("proxy")) {
-				rootObj.add("proxy", new JsonObject());
-			}
-			JsonObject proxy = rootObj.getAsJsonObject("proxy");
-
-			if (!proxy.has("match_replace_rules")) {
-				proxy.add("match_replace_rules", new JsonArray());
-			}
-			JsonArray matchReplaceRules = proxy.getAsJsonArray("match_replace_rules");
-
-			JsonObject rule = new JsonObject();
-			rule.addProperty("enabled", true);
-			rule.addProperty("is_simple_match", false);
-			rule.addProperty("rule_type", "request_header");
-			rule.addProperty("string_match", "^User-Agent:.*$");
-			rule.addProperty("string_replace", "User-Agent: " + replacePlaceholders(userAgent));
-			rule.addProperty("comment", "Added by IQS (Intigriti Quick Scope)");
-
-			boolean ruleExists = false;
-			for (int i = 0; i < matchReplaceRules.size(); i++) {
-				JsonObject existingRule = matchReplaceRules.get(i).getAsJsonObject();
-				if (existingRule.has("string_match") &&
-						existingRule.get("string_match").getAsString().equals("^User-Agent:.*$")) {
-					matchReplaceRules.set(i, rule);
-					ruleExists = true;
-					break;
-				}
-			}
-
-			if (!ruleExists) {
-				matchReplaceRules.add(rule);
-			}
-
+			JsonArray matchReplaceRules = ensureMatchReplaceRulesArray(rootObj);
+			matchReplaceRules.add(buildRule(
+				"^User-Agent:.*$",
+				"User-Agent: " + replacePlaceholders(userAgent)
+			));
 			return rootObj;
 		} catch (Exception e) {
 			logging.logToError("Failed to add User-Agent rule: " + e.getMessage());
@@ -181,38 +182,12 @@ public class RequirementsManager {
 				);
 			}
 
-			if (!rootObj.has("proxy")) {
-				rootObj.add("proxy", new JsonObject());
-			}
-			JsonObject proxy = rootObj.getAsJsonObject("proxy");
+			JsonArray matchReplaceRules = ensureMatchReplaceRulesArray(rootObj);
 
-			if (!proxy.has("match_replace_rules")) {
-				proxy.add("match_replace_rules", new JsonArray());
-			}
-			JsonArray matchReplaceRules = proxy.getAsJsonArray("match_replace_rules");
-
-			JsonObject rule = new JsonObject();
-			rule.addProperty("enabled", true);
-			rule.addProperty("is_simple_match", false);
-			rule.addProperty("rule_type", "request_header");
-			rule.addProperty("string_match", "^" + headerName + ":.*$");
-			rule.addProperty("string_replace", headerName + ": " + headerValue);
-			rule.addProperty("comment", "Added by IQS (Intigriti Quick Scope)");
-
-			boolean ruleExists = false;
-			for (int i = 0; i < matchReplaceRules.size(); i++) {
-				JsonObject existingRule = matchReplaceRules.get(i).getAsJsonObject();
-				if (existingRule.has("string_match") &&
-						existingRule.get("string_match").getAsString().equals("^" + headerName + ":.*$")) {
-					matchReplaceRules.set(i, rule);
-					ruleExists = true;
-					break;
-				}
-			}
-
-			if (!ruleExists) {
-				matchReplaceRules.add(rule);
-			}
+			matchReplaceRules.add(buildRule(
+				"",
+				headerName + ": " + headerValue
+			));
 
 			return rootObj;
 		} catch (Exception e) {
