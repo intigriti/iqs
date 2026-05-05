@@ -18,9 +18,13 @@ import javax.swing.SwingUtilities;
 public class RequirementsManager {
 
 	private static final String[] KNOWN_PLACEHOLDERS = {
+		"{{username}}",
 		"{username}",
+		"{@intigriti.me}",
 		"<username>",
 		"<researcher>",
+		"<intigriti-handle>",
+		"<your username>",
 		"(username)"
 	};
 
