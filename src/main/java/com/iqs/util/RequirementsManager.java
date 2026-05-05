@@ -242,11 +242,10 @@ public class RequirementsManager {
 				if (element.isJsonObject()) {
 					JsonObject rule = element.getAsJsonObject();
 
-					boolean isEnabled = rule.has("enabled") && rule.get("enabled").getAsBoolean();
 					boolean isOurRule = rule.has("comment") &&
 							rule.get("comment").getAsString().contains("Added by IQS");
 
-					if (!isEnabled || !isOurRule) {
+					if (!isOurRule) {
 						newRules.add(rule);
 					} else {
 						modified = true;
