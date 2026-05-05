@@ -9,10 +9,33 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.iqs.api.models.ProgramDetails;
 
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 /**
  * Manages program requirements like headers, user agents, and rate limiting
  */
 public class RequirementsManager {
+
+	private static final String[] KNOWN_PLACEHOLDERS = {
+		"{username}",
+		"<username>",
+		"<researcher>",
+		"(username)"
+	};
+
+	private static final java.util.regex.Pattern[] PLACEHOLDER_PATTERNS = buildPatterns();
+
+	private static java.util.regex.Pattern[] buildPatterns() {
+		java.util.regex.Pattern[] patterns = new java.util.regex.Pattern[KNOWN_PLACEHOLDERS.length];
+		for (int i = 0; i < KNOWN_PLACEHOLDERS.length; i++) {
+			patterns[i] = java.util.regex.Pattern.compile(
+				java.util.regex.Pattern.quote(KNOWN_PLACEHOLDERS[i]),
+				java.util.regex.Pattern.CASE_INSENSITIVE
+			);
+		}
+		return patterns;
+	}
 
 	private String username;
 	private final MontoyaApi api;
@@ -27,22 +50,33 @@ public class RequirementsManager {
 		this.username = username;
 	}
 
-	private String replacePlaceholders(String value) {
-		if (value == null || username == null || username.isEmpty()) return value;
-		return value
-			.replace("{Username}", username)
-			.replace("{username}", username)
-			.replace("<Username>", username)
-			.replace("<username>", username)
-			.replace("<RESEARCHER>", username);
+	private boolean containsKnownPlaceholder(String value) {
+		if (value == null) return false;
+		String lower = value.toLowerCase();
+		for (String p : KNOWN_PLACEHOLDERS) {
+			if (lower.contains(p)) return true;
+		}
+		return false;
 	}
 
-	/**
-	 * Applies all program requirements from the rules of engagement
-	 * 
-	 * @param programDetails The program details containing rules of engagement
-	 * @return True if requirements were successfully applied
-	 */
+	private void showWarning(String title, String message) {
+		SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+			api.userInterface().swingUtils().suiteFrame(),
+			message,
+			title,
+			JOptionPane.WARNING_MESSAGE
+		));
+	}
+
+	private String replacePlaceholders(String value) {
+		if (value == null || username == null || username.isEmpty()) return value;
+		String result = value;
+		for (java.util.regex.Pattern p : PLACEHOLDER_PATTERNS) {
+			result = p.matcher(result).replaceAll(username);
+		}
+		return result;
+	}
+
 	public boolean applyRequirements(ProgramDetails programDetails) {
 		if (programDetails == null || programDetails.getRulesOfEngagement() == null ||
 				programDetails.getRulesOfEngagement().getContent() == null ||
@@ -54,24 +88,20 @@ public class RequirementsManager {
 				.getTestingRequirements();
 
 		try {
-			// Export current project options
 			String projectOptionsJson = api.burpSuite().exportProjectOptionsAsJson();
 			JsonObject rootObj = JsonParser.parseString(projectOptionsJson).getAsJsonObject();
 			boolean modified = false;
 
-			// Apply User-Agent header if specified
 			if (requirements.getUserAgent() != null && !requirements.getUserAgent().isEmpty()) {
 				rootObj = addUserAgentRule(rootObj, requirements.getUserAgent());
 				modified = true;
 			}
 
-			// Apply custom request header if specified
 			if (requirements.getRequestHeader() != null && !requirements.getRequestHeader().isEmpty()) {
 				rootObj = addCustomHeaderRule(rootObj, requirements.getRequestHeader());
 				modified = true;
 			}
 
-			// Import the modified project options if changes were made
 			if (modified) {
 				logging.logToOutput("Applying program requirements from rules of engagement");
 				api.burpSuite().importProjectOptionsFromJson(rootObj.toString());
@@ -86,28 +116,18 @@ public class RequirementsManager {
 		}
 	}
 
-	/**
-	 * Adds a match and replace rule for the User-Agent header
-	 * 
-	 * @param rootObj   The root JSON object of the project options
-	 * @param userAgent The user agent to set
-	 * @return The modified JSON object
-	 */
 	private JsonObject addUserAgentRule(JsonObject rootObj, String userAgent) {
 		try {
-			// Ensure proxy section exists
 			if (!rootObj.has("proxy")) {
 				rootObj.add("proxy", new JsonObject());
 			}
 			JsonObject proxy = rootObj.getAsJsonObject("proxy");
 
-			// Ensure match_replace_rules section exists
 			if (!proxy.has("match_replace_rules")) {
 				proxy.add("match_replace_rules", new JsonArray());
 			}
 			JsonArray matchReplaceRules = proxy.getAsJsonArray("match_replace_rules");
 
-			// Create new rule
 			JsonObject rule = new JsonObject();
 			rule.addProperty("enabled", true);
 			rule.addProperty("is_simple_match", false);
@@ -116,20 +136,17 @@ public class RequirementsManager {
 			rule.addProperty("string_replace", "User-Agent: " + replacePlaceholders(userAgent));
 			rule.addProperty("comment", "Added by IQS (Intigriti Quick Scope)");
 
-			// Check if a similar rule already exists
 			boolean ruleExists = false;
 			for (int i = 0; i < matchReplaceRules.size(); i++) {
 				JsonObject existingRule = matchReplaceRules.get(i).getAsJsonObject();
 				if (existingRule.has("string_match") &&
 						existingRule.get("string_match").getAsString().equals("^User-Agent:.*$")) {
-					// Update existing rule
 					matchReplaceRules.set(i, rule);
 					ruleExists = true;
 					break;
 				}
 			}
 
-			// Add new rule if no similar rule exists
 			if (!ruleExists) {
 				matchReplaceRules.add(rule);
 			}
@@ -141,16 +158,8 @@ public class RequirementsManager {
 		}
 	}
 
-	/**
-	 * Adds a match and replace rule for a custom header
-	 * 
-	 * @param rootObj    The root JSON object of the project options
-	 * @param headerSpec The header specification (format: "Name: Value")
-	 * @return The modified JSON object
-	 */
 	private JsonObject addCustomHeaderRule(JsonObject rootObj, String headerSpec) {
 		try {
-			// Parse header name and value
 			String[] parts = headerSpec.split(":", 2);
 			if (parts.length != 2) {
 				logging.logToError("Invalid header format: " + headerSpec);
@@ -158,21 +167,30 @@ public class RequirementsManager {
 			}
 
 			String headerName = parts[0].trim();
-			String headerValue = replacePlaceholders(parts[1].trim());
+			String rawValue = parts[1].trim();
+			String headerValue = replacePlaceholders(rawValue);
 
-			// Ensure proxy section exists
+			if (containsKnownPlaceholder(rawValue) && (username == null || username.isEmpty())) {
+				logging.logToError("Custom header requires a username but none is saved: " + headerSpec);
+				showWarning(
+					"Username required",
+					"This program requires a custom request header containing your Intigriti " +
+					"username, but no username is saved.\n\n" +
+					"The header rule has been added, but the placeholder was left unresolved.\n" +
+					"Set your username in the configuration panel and reload the program."
+				);
+			}
+
 			if (!rootObj.has("proxy")) {
 				rootObj.add("proxy", new JsonObject());
 			}
 			JsonObject proxy = rootObj.getAsJsonObject("proxy");
 
-			// Ensure match_replace_rules section exists
 			if (!proxy.has("match_replace_rules")) {
 				proxy.add("match_replace_rules", new JsonArray());
 			}
 			JsonArray matchReplaceRules = proxy.getAsJsonArray("match_replace_rules");
 
-			// Create new rule
 			JsonObject rule = new JsonObject();
 			rule.addProperty("enabled", true);
 			rule.addProperty("is_simple_match", false);
@@ -181,20 +199,17 @@ public class RequirementsManager {
 			rule.addProperty("string_replace", headerName + ": " + headerValue);
 			rule.addProperty("comment", "Added by IQS (Intigriti Quick Scope)");
 
-			// Check if a similar rule already exists
 			boolean ruleExists = false;
 			for (int i = 0; i < matchReplaceRules.size(); i++) {
 				JsonObject existingRule = matchReplaceRules.get(i).getAsJsonObject();
 				if (existingRule.has("string_match") &&
 						existingRule.get("string_match").getAsString().equals("^" + headerName + ":.*$")) {
-					// Update existing rule
 					matchReplaceRules.set(i, rule);
 					ruleExists = true;
 					break;
 				}
 			}
 
-			// Add new rule if no similar rule exists
 			if (!ruleExists) {
 				matchReplaceRules.add(rule);
 			}
@@ -206,42 +221,31 @@ public class RequirementsManager {
 		}
 	}
 
-	/**
-	 * Removes all enabled match and replace rules
-	 * 
-	 * @return True if rules were successfully removed
-	 */
 	public boolean resetRules() {
 		try {
-			// Export current project options
 			String projectOptionsJson = api.burpSuite().exportProjectOptionsAsJson();
 			JsonObject rootObj = JsonParser.parseString(projectOptionsJson).getAsJsonObject();
 			boolean modified = false;
 
-			// Ensure proxy section exists
 			if (!rootObj.has("proxy")) {
 				rootObj.add("proxy", new JsonObject());
 			}
 			JsonObject proxy = rootObj.getAsJsonObject("proxy");
 
-			// Ensure match_replace_rules section exists
 			if (!proxy.has("match_replace_rules")) {
 				proxy.add("match_replace_rules", new JsonArray());
 			}
 			JsonArray matchReplaceRules = proxy.getAsJsonArray("match_replace_rules");
 			JsonArray newRules = new JsonArray();
 
-			// Keep only disabled rules and those not added by our extension
 			for (JsonElement element : matchReplaceRules) {
 				if (element.isJsonObject()) {
 					JsonObject rule = element.getAsJsonObject();
 
-					// Skip rules that are enabled or added by our extension
-					boolean isEnabled = rule.has("enabled") && rule.get("enabled").getAsBoolean();
 					boolean isOurRule = rule.has("comment") &&
 							rule.get("comment").getAsString().contains("Added by IQS");
 
-					if (!isEnabled || !isOurRule) {
+					if (!isOurRule) {
 						newRules.add(rule);
 					} else {
 						modified = true;
@@ -249,10 +253,8 @@ public class RequirementsManager {
 				}
 			}
 
-			// Replace the rules array
 			proxy.add("match_replace_rules", newRules);
 
-			// Import the modified project options if changes were made
 			if (modified) {
 				logging.logToOutput("Removing program requirements rules");
 				api.burpSuite().importProjectOptionsFromJson(rootObj.toString());

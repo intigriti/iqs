@@ -12,7 +12,6 @@ import com.iqs.config.QuickScopeConfig;
 import com.iqs.util.AdvancedScopeUtil;
 import com.iqs.util.EndpointClassifier;
 import com.iqs.util.ScopeConverter;
-import com.iqs.util.RequirementsManager;
 import com.iqs.ui.DomainTable;
 
 import javax.swing.*;
@@ -338,6 +337,11 @@ public class DomainsPanel extends JPanel {
 		
 		// Process domains
 		int addedCount = scopeConverter.addDomainsToScope(selectedDomains);
+
+		// Apply program requirements (replaces any previous IQS-added rules)
+		if (currentProgram != null && currentProgramDetails != null) {
+			scopeConverter.replaceProgramRequirements(currentProgramDetails);
+		}
 		
 		JOptionPane.showMessageDialog(
 			SwingUtilities.getWindowAncestor(this),
@@ -393,7 +397,7 @@ public class DomainsPanel extends JPanel {
 		// Apply program requirements if we have program details
 		try {
 			if (currentProgram != null) {
-				scopeConverter.addProgramRequirements(currentProgramDetails);
+				scopeConverter.replaceProgramRequirements(currentProgramDetails);
 			}
 		} catch (Exception ex) {
 			logging.logToError("Error applying program requirements: " + ex.getMessage());
@@ -497,11 +501,6 @@ public class DomainsPanel extends JPanel {
 					headersRequiredLabel.setVisible(false);
 				}
 			});
-
-			// Apply program requirements
-			RequirementsManager requirementsManager = new RequirementsManager(api);
-			requirementsManager.setUsername(quickScopeConfig.getUsername());
-			requirementsManager.applyRequirements(details);
 			
 			if (details.getDomains() != null && details.getDomains().getId() != null) {
 				// Load domains for the version
