@@ -3,8 +3,8 @@ ExtensionType: 1
 Name: Intigriti Quick Scope
 RepoName: intigriti-quick-scope
 ScreenVersion: 1.0.0
-SerialVersion: 2
-MinPlatformVersion: 4
+SerialVersion: 3
+MinPlatformVersion: 30
 ProOnly: False
 Author: INTIGRITI
 ShortDescription: Imports Intigriti bug bounty program scopes into Burp Suite.
