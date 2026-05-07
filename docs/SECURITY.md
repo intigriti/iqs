@@ -7,7 +7,7 @@ If you discover a security vulnerability in Intigriti Quick Scope, please report
 > [!IMPORTANT]
 > **Do not open a public GitHub issue or pull request for security vulnerabilities.**
 
-Instead, please send your report to [community@intigriti.com](mailto:community@intigriti.com).
+Instead, please send your report to [security@intigriti.com](mailto:security@intigriti.com).
 
 Include as much detail as possible to help us understand and reproduce the issue:
 

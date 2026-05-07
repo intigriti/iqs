@@ -107,4 +107,16 @@ public class ScopeConverter {
 	public boolean addProgramRequirements(ProgramDetails details) {
 		return requirementsManager.applyRequirements(details);
 	}
+
+	/**
+	 * Resets any match-and-replace rules previously added by IQS, then applies
+	 * the requirements for the given program.
+	 *
+	 * @param details The program details
+	 * @return True if requirements were applied
+	 */
+	public boolean replaceProgramRequirements(ProgramDetails details) {
+		requirementsManager.resetRules();
+		return requirementsManager.applyRequirements(details);
+	}
 }

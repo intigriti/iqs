@@ -460,7 +460,7 @@ public class ProgramDetails {
 		 * @return The user agent
 		 */
 		public String getUserAgent() {
-			return userAgent;
+			return userAgent == null ? "" : userAgent;
 		}
 
 		/**
@@ -478,7 +478,7 @@ public class ProgramDetails {
 		 * @return The request header
 		 */
 		public String getRequestHeader() {
-			return requestHeader;
+			return requestHeader == null ? "" : requestHeader;
 		}
 
 		/**
