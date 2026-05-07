@@ -3,7 +3,7 @@ ExtensionType: 1
 Name: Intigriti Quick Scope
 RepoName: intigriti-quick-scope
 ScreenVersion: 1.0.0
-SerialVersion: 4
+SerialVersion: 5
 MinPlatformVersion: 29
 ProOnly: False
 Author: INTIGRITI
