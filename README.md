@@ -16,20 +16,33 @@ IQS is currently capable of:
 
 ## Installation
 
+### Via BApp Store (recommended)
+
+1. In Burp Suite, go to the "Extensions" tab
+2. Switch to the "BApp Store" tab
+4. Search for "Intigriti Quick Scope"
+5. Finally, click on "Install" to install our official plugin
+
+Alternatively, you can install it directly from the [BApp Store page](https://portswigger.net/bappstore/8e0a61f11d4d4e4aba25137eea1e1164).
+
+![Install Intigriti Quick Scope (IQS) via BApp Store](.github/assets/images/install-intigriti-quick-scope-via-bapp-store.png)
+
 ### From JAR file
 
-1. Download the latest release JAR file from the releases page
+1. Download the latest release JAR file from the [releases page](https://github.com/intigriti/iqs/releases)
 2. Open Burp Suite
 3. Go to the "Extensions" tab
-4. Click "Add" in the "Installed" tab (underneath the "Burp Extensions" section)
+4. Within the "Installed" sub-tab, click "Add" (underneath the "Burp Extensions" section)
 5. Set the extension type to "Java"
 6. Select your JAR file
 7. Click "Next" to load the extension
 
+![Install Intigriti Quick Scope (IQS) from JAR file](.github/assets/images/install-intigriti-quick-scope-from-jar.png)
+
 ### From source
 
-1. Clone the repository
-2. Build using Gradle:
+1. Clone this repository
+2. Build this project with Gradle:
    ```
    gradle build
    ```
@@ -52,7 +65,7 @@ To start fresh, use the "Reset Scope" button to clear all scope filters and head
 
 ## Obtaining an Intigriti API Key
 
-To use this extension, you need an Intigriti account and an active Intigriti API key:
+To use this extension, you need an Intigriti researcher account and an active Intigriti API key:
 
 1. Sign into your Intigriti account
 2. Go to your profile settings
@@ -67,11 +80,11 @@ To use this extension, you need an Intigriti account and an active Intigriti API
 
 # Contributions
 
-Scope Guard is open-source and made for the community! We encourage you to contribute to the project! Please see the [Contributing guideline](docs/CONTRIBUTING.md) on how to contribute and further improve Scope Guard!
+Intigriti Quick Scope is open-source and made for the community! We encourage you to contribute to the project! Please see the [Contributing guideline](docs/CONTRIBUTING.md) on how to contribute and further improve Intigriti Quick Scope!
 
 > [!WARNING]
 > Security bugs should be reported to our security contact at [security@intigriti.com](mailto:security@intigriti.com). See [SECURITY.md](docs/SECURITY.md) for more details.
 
 # License
 
-This project is licensed and available under the [MIT License](docs/LICENSE.md)
+This project is licensed and available under the [MIT License](LICENSE.md)

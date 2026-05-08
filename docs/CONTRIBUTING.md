@@ -1,4 +1,4 @@
-# How to contribute to Quick Scope
+# How to contribute to Intigriti Quick Scope
 
 This guideline contains several steps to help you contribute to [Intigriti Quick Scope](https://github.com/intigriti/iqs). Thank you for helping out. We appreciate all contributions made to this project!
 
@@ -16,4 +16,4 @@ If you encounter any unexpected behavior, you may always [open a new issue](http
 Please include as much information as possible to help us understand the root cause of it.
 
 > [!WARNING]
-> Security bugs should be reported to our security contact at [community@intigriti.com](mailto:community@intigriti.com)!
+> Security bugs should be reported to our security contact at [security@intigriti.com](mailto:security@intigriti.com)!
