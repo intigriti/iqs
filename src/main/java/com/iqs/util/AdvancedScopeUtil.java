@@ -1,0 +1,369 @@
+package com.iqs.util;
+
+import burp.api.montoya.MontoyaApi;
+import burp.api.montoya.logging.Logging;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import com.iqs.api.models.Domain;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+
+/**
+ * Utility class for manipulating advanced scope settings using project options JSON
+ * as Montoya API Scope class does not provide a direct option to add advanced scope
+ * rules
+ */
+public class AdvancedScopeUtil {
+
+	private final MontoyaApi api;
+	private final Logging logging;
+	private final Gson gson;
+	
+	/**
+	 * Create a new AdvancedScopeUtil instance
+	 */
+	public AdvancedScopeUtil(MontoyaApi api) {
+		this.api = api;
+		this.logging = api.logging();
+		this.gson = new GsonBuilder().setPrettyPrinting().create();
+	}
+
+	/**
+	 * Add targets to the include scope
+	 *
+	 * @param targets A map of domains to a boolean indicating whether the
+	 *                target should be included (true) or excluded (false).
+	 * @return The number of rules that were successfully added.
+	 */
+	public int addTargetsToScope(java.util.Map<Domain, Boolean> targets) {
+		if (targets == null || targets.isEmpty()) {
+			return 0;
+		}
+
+		try {
+			String projectOptionsJson = api.burpSuite().exportProjectOptionsAsJson();
+			JsonObject projectOptions = JsonParser.parseString(projectOptionsJson).getAsJsonObject();
+
+			JsonObject targetScope = getOrCreateTargetScope(projectOptions);
+
+			if (!targetScope.has("exclude")) {
+				targetScope.add("exclude", new JsonArray());
+			}
+			JsonArray includeArray = targetScope.getAsJsonArray("include");
+			JsonArray excludeArray = targetScope.getAsJsonArray("exclude");
+
+			int added = 0;
+			for (java.util.Map.Entry<Domain, Boolean> entry : targets.entrySet()) {
+				Domain target = entry.getKey();
+				boolean include = entry.getValue();
+
+				String endpoint = target.getEndpoint();
+				if (endpoint == null || endpoint.isEmpty()) {
+					continue;
+				}
+
+				try {
+					String urlPattern = generateRegexPattern(endpoint);
+					if (urlPattern == null) {
+						continue;
+					}
+
+					JsonObject rule = new JsonObject();
+					rule.addProperty("enabled", true);
+					rule.addProperty("host", urlPattern);
+					rule.addProperty("protocol", "any");
+
+					(include ? includeArray : excludeArray).add(rule);
+					added++;
+				} catch (Exception e) {
+					logging.logToError("Error adding target to scope: "
+						+ endpoint + "," + e.getMessage());
+				}
+			}
+
+			logging.logToOutput("Importing " + added + " scope rule(s) into project options");
+			api.burpSuite().importProjectOptionsFromJson(gson.toJson(projectOptions));
+
+			return added;
+		} catch (Exception e) {
+			logging.logToError("Error adding scope rules in batch: " + e.getMessage());
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+	/**
+	 * Process an endpoint into a regex pattern suitable for scope
+	 * 
+	 * @param endpoint The endpoint to process
+	 * @return A regex pattern suitable for scope rules
+	 */
+	public String generateRegexPattern(String endpoint) {
+		// Normalize endpoint
+		endpoint = endpoint.strip();
+		if (!endpoint.startsWith("http://") && !endpoint.startsWith("https://") && endpoint.contains(".")) {
+			endpoint = "https://" + endpoint;
+		}
+
+		try {
+			java.net.URL url = new java.net.URL(endpoint);
+			String host = url.getHost();
+
+			// Handle different domain types
+			if (isMobileUrl(endpoint)) {
+				return "# Mobile App: " + endpoint;
+			} else if (host.startsWith("*.")) {
+				// Wildcard subdomain
+				String domain = host.substring(2);
+				return "^http(s)?:\\/\\/(.*\\.)?" + domain.replace(".", "\\.") + "(\\/.*)?$";
+			} else {
+				// Regular domain
+				return "^http(s)?:\\/\\/" + host.replace(".", "\\.").replaceAll(",\\s*", "|") + "(\\/.*)?$";
+			}
+		} catch (Exception e) {
+
+			// Not a valid domain, return a comment
+			return "# Non-URL: " + endpoint;
+		}
+	}
+
+	/**
+	 * Check if a URL is for an app store
+	 */
+	private static boolean isMobileUrl(String url) {
+		if (url == null) return false;
+		String lower = url.toLowerCase();
+		return lower.contains("apps.apple.com") || 
+			lower.contains("play.google.com") ||
+			lower.contains("/store/apps/") || 
+			lower.contains("/in/developer/") ||
+			lower.contains("itunes.apple");
+	}
+
+	/**
+	 * Clear all scope rules and reset to a new set of rules.
+	 *
+	 * @param includePatterns Patterns to include in scope
+	 * @param excludePatterns Patterns to exclude from scope
+	 * @return true if successful
+	 */
+	public boolean resetScopeRules(List<String> includePatterns, List<String> excludePatterns) {
+		try {
+			String projectOptionsJson = api.burpSuite().exportProjectOptionsAsJson();
+			JsonObject projectOptions = JsonParser.parseString(projectOptionsJson).getAsJsonObject();
+
+			JsonObject targetScope = getOrCreateTargetScope(projectOptions);
+
+			// Build the two arrays separately
+			JsonArray includeRules = new JsonArray();
+			for (String pattern : includePatterns) {
+				JsonObject rule = new JsonObject();
+				rule.addProperty("enabled", true);
+				rule.addProperty("host", pattern);
+				rule.addProperty("protocol", "any");
+				includeRules.add(rule);
+			}
+
+			JsonArray excludeRules = new JsonArray();
+			for (String pattern : excludePatterns) {
+				JsonObject rule = new JsonObject();
+				rule.addProperty("enabled", true);
+				rule.addProperty("host", pattern);
+				rule.addProperty("protocol", "any");
+				excludeRules.add(rule);
+			}
+
+			// Replace whatever was under "include" / "exclude" with new arrays
+			targetScope.add("include", includeRules);
+			targetScope.add("exclude", excludeRules);
+
+			// Enable advanced mode
+			targetScope.addProperty("advanced_mode", true);
+
+			// Import the updated project options
+			logging.logToOutput("Importing updated project options");
+			api.burpSuite().importProjectOptionsFromJson(gson.toJson(projectOptions));
+
+			logging.logToOutput("Reset scope rules with " + includePatterns.size() +
+								" include and " + excludePatterns.size() + " exclude rules");
+			return true;
+		} catch (Exception e) {
+			logging.logToError("Error resetting scope rules: " + e.getMessage());
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	/**
+	 * Clear all scope rules
+	 * 
+	 * @return true if successful
+	 */
+	public boolean clearScope() {
+		return resetScopeRules(new ArrayList<>(), new ArrayList<>());
+	}
+	
+	/**
+	 * Initialize or get the target scope section from project options
+	 * 
+	 * @param projectOptions The project options JSON object
+	 * @return The target scope JSON object
+	 */
+	private JsonObject getOrCreateTargetScope(JsonObject projectOptions) {
+		// Ensure target object exists
+		if (!projectOptions.has("target")) {
+			projectOptions.add("target", new JsonObject());
+		}
+		JsonObject targetObject = projectOptions.getAsJsonObject("target");
+		
+		// Ensure scope object exists
+		if (!targetObject.has("scope")) {
+			targetObject.add("scope", new JsonObject());
+		}
+		JsonObject targetScope = targetObject.getAsJsonObject("scope");
+		
+		// Ensure include array exists
+		if (!targetScope.has("include")) {
+			targetScope.add("include", new JsonArray());
+		}
+		
+		// Enable advanced mode
+		targetScope.addProperty("advanced_mode", true);
+		
+		return targetScope;
+	}
+
+	/**
+	 * Validate if an endpoint is a valid domain, URL, wildcard pattern, or identify
+	 * special cases
+	 * 
+	 * @param endpoint The endpoint to validate
+	 * @return ValidationResult containing validation status and type
+	 */
+	public ValidationResult validateEndpoint(String endpoint) {
+		if (endpoint == null || endpoint.isEmpty()) {
+			return new ValidationResult(false, ValidationResult.Type.EMPTY);
+		}
+
+		// Check for mobile apps
+		if (endpoint.toLowerCase().contains("play.google.com") ||
+				endpoint.toLowerCase().contains("apps.apple.com") ||
+				endpoint.toLowerCase().contains("appstore")) {
+			return new ValidationResult(false, ValidationResult.Type.APP_STORE_LINK);
+		}
+
+		// Check for valid URL or domain pattern
+		if (isValidUrlOrDomain(endpoint)) {
+			return new ValidationResult(true, ValidationResult.Type.VALID_URL_OR_DOMAIN);
+		}
+
+		// Check for mobile app identifier (e.g., com.company.app)
+		if (endpoint.matches("^[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z][a-zA-Z0-9_]*)+$")) {
+			return new ValidationResult(false, ValidationResult.Type.MOBILE_APP_ID);
+		}
+
+		// Check for product name (contains spaces, no dots or slashes)
+		if (endpoint.contains(" ") && !endpoint.contains("/") && !endpoint.contains(".")) {
+			return new ValidationResult(false, ValidationResult.Type.PRODUCT_NAME);
+		}
+
+		// Default case - some other descriptive text
+		return new ValidationResult(false, ValidationResult.Type.DESCRIPTIVE_TEXT);
+	}
+
+	/**
+	 * Helper method to check if string is a valid URL or domain
+	 */
+	private boolean isValidUrlOrDomain(String input) {
+		// Normalize endpoint for checking
+		String normalizedInput = input;
+		if (!normalizedInput.startsWith("http://") && !normalizedInput.startsWith("https://") &&
+			normalizedInput.contains(".")) {
+			normalizedInput = "https://" + normalizedInput;
+		}
+
+		try {
+			// Try to parse as URL
+			new java.net.URL(normalizedInput);
+			return true;
+		} catch (Exception e) {
+			// Check for domain patterns
+			normalizedInput = input; // Use original for domain checks
+
+			// Check for wildcard domain pattern (*.example.com)
+			if (normalizedInput.startsWith("*.") && normalizedInput.indexOf('.', 2) > 0) {
+				return true;
+			}
+
+			// Check for simple domain pattern (example.com)
+			if (normalizedInput.contains(".") &&
+					normalizedInput.matches("^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+				return true;
+			}
+
+			// IP address pattern
+			if (normalizedInput.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Validation result class
+	 */
+	public static class ValidationResult {
+		private final boolean valid;
+		private final Type type;
+
+		public enum Type {
+			VALID_URL_OR_DOMAIN,
+			EMPTY,
+			MOBILE_APP_ID,
+			APP_STORE_LINK,
+			PRODUCT_NAME,
+			DESCRIPTIVE_TEXT
+		}
+
+		public ValidationResult(boolean valid, Type type) {
+			this.valid = valid;
+			this.type = type;
+		}
+
+		public boolean isValid() {
+			return valid;
+		}
+
+		public Type getType() {
+			return type;
+		}
+
+		public String getReadableType() {
+			switch (type) {
+				case VALID_URL_OR_DOMAIN:
+					return "Valid URL or domain";
+				case EMPTY:
+					return "Empty";
+				case MOBILE_APP_ID:
+					return "Mobile app ID";
+				case APP_STORE_LINK:
+					return "App store link";
+				case PRODUCT_NAME:
+					return "Product name";
+				case DESCRIPTIVE_TEXT:
+					return "Descriptive text";
+				default:
+					return "Unknown";
+			}
+		}
+	}
+}
