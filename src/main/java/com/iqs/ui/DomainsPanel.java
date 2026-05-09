@@ -79,7 +79,7 @@ public class DomainsPanel extends JPanel {
 		
 		// Add tabs for main categories
 		JPanel webPanel = createCategoryPanel("Web");
-		JPanel nonWebPanel = createCategoryPanel("Other");
+		JPanel nonWebPanel = createCategoryPanel("Others");
 		JPanel outOfScopePanel = createCategoryPanel("Out of Scope");
 		
 		tabbedPane.addTab("Web", webPanel);
@@ -276,7 +276,7 @@ public class DomainsPanel extends JPanel {
 			domainTables.put(EndpointClassifier.EndpointType.MOBILE_APP, table);
 			domainTables.put(EndpointClassifier.EndpointType.DESKTOP_APP, table);
 			domainTables.put(EndpointClassifier.EndpointType.DESCRIPTIVE, table);
-			domainTables.put(EndpointClassifier.EndpointType.UNKNOWN, table);
+			domainTables.put(EndpointClassifier.EndpointType.OTHERS, table);
 		}
 		
 		return panel;
@@ -521,9 +521,15 @@ public class DomainsPanel extends JPanel {
 				
 				for (Domain domain : domains) {
 					EndpointClassifier.EndpointType type = EndpointClassifier.classifyDomain(domain);
-					
-					// Create a row with endpoint and regex pattern
-					String regexPattern = advancedScopeUtil.generateRegexPattern(domain.getEndpoint());
+
+					String regexPattern;
+					if (type == EndpointClassifier.EndpointType.WEB_URL ||
+							type == EndpointClassifier.EndpointType.WEB_WILDCARD) {
+						regexPattern = advancedScopeUtil.generateRegexPattern(domain.getEndpoint());
+					} else {
+						regexPattern = "# Non-URL: " + EndpointClassifier.getCategoryName(type);
+					}
+
 					DomainTableModel.DomainRow row = new DomainTableModel.DomainRow(
 						domain,
 						regexPattern

@@ -240,7 +240,7 @@ public class DomainTable extends JTable {
 
 		// Add type filter
 		JComboBox<String> typeFilter = new JComboBox<>(new String[] {
-				"All Types", "URL", "Wildcard", "API", "IP Range", "Unknown"
+				"All Types", "URL", "Wildcard", "API", "IP Ranges", "Others"
 		});
 		typeFilter.addActionListener(e -> {
 			String selectedType = (String) typeFilter.getSelectedItem();
@@ -268,8 +268,8 @@ public class DomainTable extends JTable {
 
 		if (typeFilter.equals("All Types")) {
 			sorter.setRowFilter(null);
-		} else if (typeFilter.equals("Unknown")) {
-			sorter.setRowFilter(RowFilter.regexFilter("^Unknown$", 1));
+		} else if (typeFilter.equals("Others")) {
+			sorter.setRowFilter(RowFilter.regexFilter("^Others$", 1));
 		} else {
 			sorter.setRowFilter(RowFilter.regexFilter("^" + Pattern.quote(typeFilter) + "$", 1));
 		}

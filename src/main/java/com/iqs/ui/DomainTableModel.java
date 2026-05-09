@@ -67,7 +67,7 @@ public class DomainTableModel extends AbstractTableModel {
 				// Check if this has an invalid regex pattern (starts with #)
 				String pattern = row.getRegexPattern();
 				if (pattern != null && pattern.startsWith("#")) {
-					return "Unknown";
+					return "Others";
 				}
 
 				// Check if this is an app store URL

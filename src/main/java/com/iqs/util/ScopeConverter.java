@@ -59,12 +59,16 @@ public class ScopeConverter {
 			AdvancedScopeUtil.ValidationResult validationResult =
 				advancedScopeUtil.validateEndpoint(endpoint);
 
-			logging.logToOutput("Is Valid: " + endpoint + "," +
-				(validationResult.isValid() ? "valid" : "invalid") +
-				"," + validationResult.getReadableType());
-
 			if (!validationResult.isValid()) {
 				invalidEndpoints.put(endpoint, validationResult.getReadableType());
+				continue;
+			}
+
+			// Only generate scope rules for Url and Wildcard types
+			EndpointClassifier.EndpointType endpointType = EndpointClassifier.classifyDomain(domain);
+			if (endpointType != EndpointClassifier.EndpointType.WEB_URL &&
+					endpointType != EndpointClassifier.EndpointType.WEB_WILDCARD) {
+				logging.logToOutput("Skipping non-web endpoint: " + endpoint + " (" + endpointType + ")");
 				continue;
 			}
 

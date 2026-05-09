@@ -130,7 +130,6 @@ public class AdvancedScopeUtil {
 				return "^" + host.replace(".", "\\.").replaceAll(",\\s*", "|") + "$";
 			}
 		} catch (Exception e) {
-
 			// Not a valid domain, return a comment
 			return "# Non-URL: " + endpoint;
 		}
