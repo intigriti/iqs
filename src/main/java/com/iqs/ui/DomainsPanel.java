@@ -371,14 +371,14 @@ public class DomainsPanel extends JPanel {
 		Component view = scrollPane.getViewport().getView();
 		if (!(view instanceof DomainTable)) return;
 
-		DomainTable table = (DomainTable) view;
-
 		// Get all domains from the table
 		List<Domain> allDomains = new ArrayList<>();
-		for (int i = 0; i < table.getModel().getRowCount(); i++) {
-			Domain domain = ((DomainTableModel) table.getModel()).getDomain(i);
-			if (domain != null) {
-				allDomains.add(domain);
+		for (DomainTable table : new java.util.LinkedHashSet<>(domainTables.values())) {
+			for (int i = 0; i < table.getModel().getRowCount(); i++) {
+				Domain domain = ((DomainTableModel) table.getModel()).getDomain(i);
+				if (domain != null) {
+					allDomains.add(domain);
+				}
 			}
 		}
 

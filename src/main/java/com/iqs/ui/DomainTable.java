@@ -10,6 +10,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -22,6 +23,15 @@ public class DomainTable extends JTable {
 	private final MontoyaApi api;
 	private final DomainTableModel model;
 	private final String category;
+
+	@Override
+	public String getToolTipText(MouseEvent e) {
+		int row = rowAtPoint(e.getPoint());
+		int col = columnAtPoint(e.getPoint());
+		if (row < 0 || col < 0) return null;
+		Object value = getValueAt(row, col);
+		return value != null ? value.toString() : null;
+	}
 	
 	/**
 	 * Create a new domain table

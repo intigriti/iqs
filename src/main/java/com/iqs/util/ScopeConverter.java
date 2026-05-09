@@ -64,15 +64,24 @@ public class ScopeConverter {
 				continue;
 			}
 
-			// Only generate scope rules for Url and Wildcard types
-			EndpointClassifier.EndpointType endpointType = EndpointClassifier.classifyDomain(domain);
-			if (endpointType != EndpointClassifier.EndpointType.WEB_URL &&
-					endpointType != EndpointClassifier.EndpointType.WEB_WILDCARD) {
-				logging.logToOutput("Skipping non-web endpoint: " + endpoint + " (" + endpointType + ")");
-				continue;
+			boolean include = !isOutOfScopeDomain(domain);
+
+			if (include) {
+				// Only generate scope rules for Url and Wildcard types
+				EndpointClassifier.EndpointType endpointType = EndpointClassifier.classifyDomain(domain);
+				if (endpointType != EndpointClassifier.EndpointType.WEB_URL &&
+						endpointType != EndpointClassifier.EndpointType.WEB_WILDCARD) {
+					continue;
+				}
+			} else {
+				String rawType = domain.getType() != null ? domain.getType().getValue() : null;
+				if (rawType == null) continue;
+				String rawTypeLower = rawType.toLowerCase();
+				if (!rawTypeLower.equals("url") && !rawTypeLower.equals("wildcard")) {
+					continue;
+				}
 			}
 
-			boolean include = !isOutOfScopeDomain(domain);
 			targets.put(domain, include);
 		}
 
