@@ -165,8 +165,9 @@ public class AdvancedScopeUtil {
 			java.net.URL url = new java.net.URL(endpoint);
 			String path = url.getPath();
 
-			if (path == null || path.isEmpty() || path.equals("/")) {
-				return ".*";
+			if (path == null || path.isEmpty() || path.equals("/")
+				|| path.equals("/*") || path.equals("/.*")) {
+				return "";
 			}
 
 			// Split on wildcard (*), escape each literal segment, rejoin with .*
@@ -179,7 +180,7 @@ public class AdvancedScopeUtil {
 			sb.append("$");
 			return sb.toString();
 		} catch (Exception e) {
-			return ".*";
+			return "";
 		}
 	}
 

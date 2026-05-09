@@ -385,8 +385,8 @@ public class DomainsPanel extends JPanel {
 		if (allDomains.isEmpty()) {
 			JOptionPane.showMessageDialog(
 					SwingUtilities.getWindowAncestor(this),
-					"No domains available to add to scope",
-					"No domains",
+					"You need to select a program first before you can apply its scope!",
+					"Select a program first!",
 					JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
