@@ -78,8 +78,9 @@ public class AdvancedScopeUtil {
 
 					JsonObject rule = new JsonObject();
 					rule.addProperty("enabled", true);
+					rule.addProperty("protocol", determineProtocol(endpoint));
 					rule.addProperty("host", urlPattern);
-					rule.addProperty("protocol", "any");
+					rule.addProperty("file", generateFilePattern(endpoint));
 
 					(include ? includeArray : excludeArray).add(rule);
 					added++;
@@ -123,15 +124,62 @@ public class AdvancedScopeUtil {
 			} else if (host.startsWith("*.")) {
 				// Wildcard subdomain
 				String domain = host.substring(2);
-				return "^http(s)?:\\/\\/(.*\\.)?" + domain.replace(".", "\\.") + "(\\/.*)?$";
+				return "^(.*\\.)?" + domain.replace(".", "\\.") + "$";
 			} else {
 				// Regular domain
-				return "^http(s)?:\\/\\/" + host.replace(".", "\\.").replaceAll(",\\s*", "|") + "(\\/.*)?$";
+				return "^" + host.replace(".", "\\.").replaceAll(",\\s*", "|") + "$";
 			}
 		} catch (Exception e) {
 
 			// Not a valid domain, return a comment
 			return "# Non-URL: " + endpoint;
+		}
+	}
+
+	/**
+	 * Determine whether a scope item's protocol starts with
+	 * HTTP, HTTPS or any
+	 * 
+	 * @param endpoint The endpoint to process
+	 * @return Protocol type
+	 */
+	private String determineProtocol(String endpoint) {
+		if (endpoint.startsWith("https://")) return "https";
+		if (endpoint.startsWith("http://"))  return "http";
+		return "any";
+	}
+
+	/**
+	 * Process the URI path into a regex pattern suitable for scope
+	 * 
+	 * @param endpoint The endpoint to process
+	 * @return A regex pattern suitable for scope rules
+	 */
+	private String generateFilePattern(String endpoint) {
+		endpoint = endpoint.strip();
+		if (!endpoint.startsWith("http://") && !endpoint.startsWith("https://") && endpoint.contains(".")) {
+			endpoint = "https://" + endpoint;
+		}
+
+		try {
+			java.net.URL url = new java.net.URL(endpoint);
+			String path = url.getPath();
+
+			if (path == null || path.isEmpty() || path.equals("/")) {
+				return ".*";
+			}
+
+			// Split on wildcard (*), escape each literal segment, rejoin with .*
+			String[] parts = path.split("\\*", -1);
+			StringBuilder sb = new StringBuilder("^");
+			for (int i = 0; i < parts.length; i++) {
+				if (i > 0) sb.append(".*");
+				sb.append(Pattern.quote(parts[i]));
+			}
+			sb.append("$");
+			return sb.toString();
+		} catch (Exception e) {
+			return ".*";
 		}
 	}
 
