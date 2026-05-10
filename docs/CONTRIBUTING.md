@@ -16,4 +16,4 @@ If you encounter any unexpected behavior, you may always [open a new issue](http
 Please include as much information as possible to help us understand the root cause of it.
 
 > [!WARNING]
-> Security bugs should be reported to our security contact at [security@intigriti.com](mailto:security@intigriti.com)!
+> Security bugs should be reported via our [Vulnerability Disclosure Program (VDP)](https://app.intigriti.com/vdp). See [SECURITY.md](docs/SECURITY.md) for more details.
