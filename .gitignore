@@ -13,7 +13,4 @@ build
 dist/
 .semrel
 .generated-go-semantic-release-changelog.md
-<<<<<<< HEAD
 .claude
-=======
->>>>>>> bapp-fork-latest/main
