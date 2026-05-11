@@ -22,7 +22,7 @@ public class EndpointClassifier {
 		DESKTOP_APP,         // Desktop app references
 		DESCRIPTIVE,         // Generic descriptions
 		OUT_OF_SCOPE,        // Items marked as out of scope
-		UNKNOWN              // Unclassified
+		OTHERS               // Unclassified
 	}
 	
 	/**
@@ -104,7 +104,7 @@ public class EndpointClassifier {
 	 */
 	private static EndpointType classifyEndpoint(String endpoint) {
 		if (endpoint == null || endpoint.isEmpty()) {
-			return EndpointType.UNKNOWN;
+			return EndpointType.OTHERS;
 		}
 
 		// Check for app store URLs first (highest priority)
@@ -165,8 +165,7 @@ public class EndpointClassifier {
 			case DESKTOP_APP: return "Desktop Applications";
 			case DESCRIPTIVE: return "Other Items";
 			case OUT_OF_SCOPE: return "Out of Scope Items";
-			case UNKNOWN: return "Uncategorized";
-			default: return "Miscellaneous";
+			default: return "Others";
 		}
 	}
 	

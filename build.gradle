@@ -4,7 +4,11 @@ plugins {
 
 group = 'com.iqs'
 version = '1.0.0'
-// sourceCompatibility = '17'
+
+java {
+	sourceCompatibility = '21'
+	targetCompatibility = '21'
+}
 
 repositories {
     mavenCentral()

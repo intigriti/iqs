@@ -59,16 +59,29 @@ public class ScopeConverter {
 			AdvancedScopeUtil.ValidationResult validationResult =
 				advancedScopeUtil.validateEndpoint(endpoint);
 
-			logging.logToOutput("Is Valid: " + endpoint + "," +
-				(validationResult.isValid() ? "valid" : "invalid") +
-				"," + validationResult.getReadableType());
-
 			if (!validationResult.isValid()) {
 				invalidEndpoints.put(endpoint, validationResult.getReadableType());
 				continue;
 			}
 
 			boolean include = !isOutOfScopeDomain(domain);
+
+			if (include) {
+				// Only generate scope rules for Url and Wildcard types
+				EndpointClassifier.EndpointType endpointType = EndpointClassifier.classifyDomain(domain);
+				if (endpointType != EndpointClassifier.EndpointType.WEB_URL &&
+						endpointType != EndpointClassifier.EndpointType.WEB_WILDCARD) {
+					continue;
+				}
+			} else {
+				String rawType = domain.getType() != null ? domain.getType().getValue() : null;
+				if (rawType == null) continue;
+				String rawTypeLower = rawType.toLowerCase();
+				if (!rawTypeLower.equals("url") && !rawTypeLower.equals("wildcard")) {
+					continue;
+				}
+			}
+
 			targets.put(domain, include);
 		}
 

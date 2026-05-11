@@ -83,7 +83,7 @@ To use this extension, you need an Intigriti researcher account and an active In
 Intigriti Quick Scope is open-source and made for the community! We encourage you to contribute to the project! Please see the [Contributing guideline](docs/CONTRIBUTING.md) on how to contribute and further improve Intigriti Quick Scope!
 
 > [!WARNING]
-> Security bugs should be reported to our security contact at [security@intigriti.com](mailto:security@intigriti.com). See [SECURITY.md](docs/SECURITY.md) for more details.
+> Security bugs should be reported via our [Vulnerability Disclosure Program (VDP)](https://app.intigriti.com/vdp). See [SECURITY.md](docs/SECURITY.md) for more details.
 
 # License
 
