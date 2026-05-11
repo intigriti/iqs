@@ -67,7 +67,11 @@ public class DomainTableModel extends AbstractTableModel {
 				// Check if this has an invalid regex pattern (starts with #)
 				String pattern = row.getRegexPattern();
 				if (pattern != null && pattern.startsWith("#")) {
+<<<<<<< HEAD
 					return "Others";
+=======
+					return "Unknown";
+>>>>>>> bapp-fork-latest/main
 				}
 
 				// Check if this is an app store URL

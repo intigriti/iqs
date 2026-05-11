@@ -4,11 +4,15 @@ plugins {
 
 group = 'com.iqs'
 version = '1.0.0'
+<<<<<<< HEAD
 
 java {
 	sourceCompatibility = '21'
 	targetCompatibility = '21'
 }
+=======
+// sourceCompatibility = '17'
+>>>>>>> bapp-fork-latest/main
 
 repositories {
     mavenCentral()
@@ -18,7 +22,11 @@ repositories {
 }
 
 dependencies {
+<<<<<<< HEAD
 	compileOnly 'net.portswigger.burp.extensions:montoya-api:2026.4'
+=======
+	compileOnly 'net.portswigger.burp.extensions:montoya-api:2026.2'
+>>>>>>> bapp-fork-latest/main
 	implementation 'com.google.code.gson:gson:2.14.0'
 }
 

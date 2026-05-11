@@ -10,7 +10,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
+<<<<<<< HEAD
 import java.awt.event.MouseEvent;
+=======
+>>>>>>> bapp-fork-latest/main
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -23,6 +26,7 @@ public class DomainTable extends JTable {
 	private final MontoyaApi api;
 	private final DomainTableModel model;
 	private final String category;
+<<<<<<< HEAD
 
 	@Override
 	public String getToolTipText(MouseEvent e) {
@@ -32,6 +36,8 @@ public class DomainTable extends JTable {
 		Object value = getValueAt(row, col);
 		return value != null ? value.toString() : null;
 	}
+=======
+>>>>>>> bapp-fork-latest/main
 	
 	/**
 	 * Create a new domain table
@@ -250,7 +256,11 @@ public class DomainTable extends JTable {
 
 		// Add type filter
 		JComboBox<String> typeFilter = new JComboBox<>(new String[] {
+<<<<<<< HEAD
 				"All Types", "URL", "Wildcard", "API", "IP Ranges", "Others"
+=======
+				"All Types", "URL", "Wildcard", "API", "IP Range", "Unknown"
+>>>>>>> bapp-fork-latest/main
 		});
 		typeFilter.addActionListener(e -> {
 			String selectedType = (String) typeFilter.getSelectedItem();
@@ -278,8 +288,13 @@ public class DomainTable extends JTable {
 
 		if (typeFilter.equals("All Types")) {
 			sorter.setRowFilter(null);
+<<<<<<< HEAD
 		} else if (typeFilter.equals("Others")) {
 			sorter.setRowFilter(RowFilter.regexFilter("^Others$", 1));
+=======
+		} else if (typeFilter.equals("Unknown")) {
+			sorter.setRowFilter(RowFilter.regexFilter("^Unknown$", 1));
+>>>>>>> bapp-fork-latest/main
 		} else {
 			sorter.setRowFilter(RowFilter.regexFilter("^" + Pattern.quote(typeFilter) + "$", 1));
 		}

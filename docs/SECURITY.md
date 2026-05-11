@@ -7,7 +7,11 @@ If you discover a security vulnerability in Intigriti Quick Scope, please report
 > [!IMPORTANT]
 > **Do not open a public GitHub issue or pull request for security vulnerabilities.**
 
+<<<<<<< HEAD
 Instead, security bugs should be reported via our [Vulnerability Disclosure Program (VDP)](https://app.intigriti.com/vdp). See [SECURITY.md](docs/SECURITY.md) for more details.
+=======
+Instead, please send your report to [security@intigriti.com](mailto:security@intigriti.com).
+>>>>>>> bapp-fork-latest/main
 
 Include as much detail as possible to help us understand and reproduce the issue:
 

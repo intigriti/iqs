@@ -59,12 +59,20 @@ public class ScopeConverter {
 			AdvancedScopeUtil.ValidationResult validationResult =
 				advancedScopeUtil.validateEndpoint(endpoint);
 
+<<<<<<< HEAD
+=======
+			logging.logToOutput("Is Valid: " + endpoint + "," +
+				(validationResult.isValid() ? "valid" : "invalid") +
+				"," + validationResult.getReadableType());
+
+>>>>>>> bapp-fork-latest/main
 			if (!validationResult.isValid()) {
 				invalidEndpoints.put(endpoint, validationResult.getReadableType());
 				continue;
 			}
 
 			boolean include = !isOutOfScopeDomain(domain);
+<<<<<<< HEAD
 
 			if (include) {
 				// Only generate scope rules for Url and Wildcard types
@@ -82,6 +90,8 @@ public class ScopeConverter {
 				}
 			}
 
+=======
+>>>>>>> bapp-fork-latest/main
 			targets.put(domain, include);
 		}
 
