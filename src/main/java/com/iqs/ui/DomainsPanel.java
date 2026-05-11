@@ -79,11 +79,7 @@ public class DomainsPanel extends JPanel {
 		
 		// Add tabs for main categories
 		JPanel webPanel = createCategoryPanel("Web");
-<<<<<<< HEAD
 		JPanel nonWebPanel = createCategoryPanel("Others");
-=======
-		JPanel nonWebPanel = createCategoryPanel("Other");
->>>>>>> bapp-fork-latest/main
 		JPanel outOfScopePanel = createCategoryPanel("Out of Scope");
 		
 		tabbedPane.addTab("Web", webPanel);
@@ -280,11 +276,7 @@ public class DomainsPanel extends JPanel {
 			domainTables.put(EndpointClassifier.EndpointType.MOBILE_APP, table);
 			domainTables.put(EndpointClassifier.EndpointType.DESKTOP_APP, table);
 			domainTables.put(EndpointClassifier.EndpointType.DESCRIPTIVE, table);
-<<<<<<< HEAD
 			domainTables.put(EndpointClassifier.EndpointType.OTHERS, table);
-=======
-			domainTables.put(EndpointClassifier.EndpointType.UNKNOWN, table);
->>>>>>> bapp-fork-latest/main
 		}
 		
 		return panel;
@@ -379,7 +371,6 @@ public class DomainsPanel extends JPanel {
 		Component view = scrollPane.getViewport().getView();
 		if (!(view instanceof DomainTable)) return;
 
-<<<<<<< HEAD
 		// Get all domains from the table
 		List<Domain> allDomains = new ArrayList<>();
 		for (DomainTable table : new java.util.LinkedHashSet<>(domainTables.values())) {
@@ -388,29 +379,14 @@ public class DomainsPanel extends JPanel {
 				if (domain != null) {
 					allDomains.add(domain);
 				}
-=======
-		DomainTable table = (DomainTable) view;
-
-		// Get all domains from the table
-		List<Domain> allDomains = new ArrayList<>();
-		for (int i = 0; i < table.getModel().getRowCount(); i++) {
-			Domain domain = ((DomainTableModel) table.getModel()).getDomain(i);
-			if (domain != null) {
-				allDomains.add(domain);
->>>>>>> bapp-fork-latest/main
 			}
 		}
 
 		if (allDomains.isEmpty()) {
 			JOptionPane.showMessageDialog(
 					SwingUtilities.getWindowAncestor(this),
-<<<<<<< HEAD
 					"You need to select a program first before you can apply its scope!",
 					"Select a program first!",
-=======
-					"No domains available to add to scope",
-					"No domains",
->>>>>>> bapp-fork-latest/main
 					JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
@@ -545,7 +521,6 @@ public class DomainsPanel extends JPanel {
 				
 				for (Domain domain : domains) {
 					EndpointClassifier.EndpointType type = EndpointClassifier.classifyDomain(domain);
-<<<<<<< HEAD
 
 					String regexPattern;
 					if (type == EndpointClassifier.EndpointType.WEB_URL ||
@@ -555,11 +530,6 @@ public class DomainsPanel extends JPanel {
 						regexPattern = "# Non-URL: " + EndpointClassifier.getCategoryName(type);
 					}
 
-=======
-					
-					// Create a row with endpoint and regex pattern
-					String regexPattern = advancedScopeUtil.generateRegexPattern(domain.getEndpoint());
->>>>>>> bapp-fork-latest/main
 					DomainTableModel.DomainRow row = new DomainTableModel.DomainRow(
 						domain,
 						regexPattern

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 # How to contribute to Intigriti Quick Scope
-=======
-# How to contribute to Quick Scope
->>>>>>> bapp-fork-latest/main
 
 This guideline contains several steps to help you contribute to [Intigriti Quick Scope](https://github.com/intigriti/iqs). Thank you for helping out. We appreciate all contributions made to this project!
 
@@ -20,8 +16,4 @@ If you encounter any unexpected behavior, you may always [open a new issue](http
 Please include as much information as possible to help us understand the root cause of it.
 
 > [!WARNING]
-<<<<<<< HEAD
 > Security bugs should be reported via our [Vulnerability Disclosure Program (VDP)](https://app.intigriti.com/vdp). See [SECURITY.md](docs/SECURITY.md) for more details.
-=======
-> Security bugs should be reported to our security contact at [community@intigriti.com](mailto:community@intigriti.com)!
->>>>>>> bapp-fork-latest/main

@@ -78,14 +78,9 @@ public class AdvancedScopeUtil {
 
 					JsonObject rule = new JsonObject();
 					rule.addProperty("enabled", true);
-<<<<<<< HEAD
 					rule.addProperty("protocol", determineProtocol(endpoint));
 					rule.addProperty("host", urlPattern);
 					rule.addProperty("file", generateFilePattern(endpoint));
-=======
-					rule.addProperty("host", urlPattern);
-					rule.addProperty("protocol", "any");
->>>>>>> bapp-fork-latest/main
 
 					(include ? includeArray : excludeArray).add(rule);
 					added++;
@@ -129,29 +124,18 @@ public class AdvancedScopeUtil {
 			} else if (host.startsWith("*.")) {
 				// Wildcard subdomain
 				String domain = host.substring(2);
-<<<<<<< HEAD
 				return "^(.*\\.)?" + domain.replace(".", "\\.") + "$";
 			} else {
 				// Regular domain
 				return "^" + host.replace(".", "\\.").replaceAll(",\\s*", "|") + "$";
 			}
 		} catch (Exception e) {
-=======
-				return "^http(s)?:\\/\\/(.*\\.)?" + domain.replace(".", "\\.") + "(\\/.*)?$";
-			} else {
-				// Regular domain
-				return "^http(s)?:\\/\\/" + host.replace(".", "\\.").replaceAll(",\\s*", "|") + "(\\/.*)?$";
-			}
-		} catch (Exception e) {
-
->>>>>>> bapp-fork-latest/main
 			// Not a valid domain, return a comment
 			return "# Non-URL: " + endpoint;
 		}
 	}
 
 	/**
-<<<<<<< HEAD
 	 * Determine whether a scope item's protocol starts with
 	 * HTTP, HTTPS or any
 	 * 
@@ -200,8 +184,6 @@ public class AdvancedScopeUtil {
 	}
 
 	/**
-=======
->>>>>>> bapp-fork-latest/main
 	 * Check if a URL is for an app store
 	 */
 	private static boolean isMobileUrl(String url) {

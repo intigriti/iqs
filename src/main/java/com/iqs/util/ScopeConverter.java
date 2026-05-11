@@ -72,7 +72,6 @@ public class ScopeConverter {
 			}
 
 			boolean include = !isOutOfScopeDomain(domain);
-<<<<<<< HEAD
 
 			if (include) {
 				// Only generate scope rules for Url and Wildcard types
@@ -90,8 +89,6 @@ public class ScopeConverter {
 				}
 			}
 
-=======
->>>>>>> bapp-fork-latest/main
 			targets.put(domain, include);
 		}
 

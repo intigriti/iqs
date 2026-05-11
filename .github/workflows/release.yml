@@ -18,11 +18,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-<<<<<<< HEAD
           java-version: '21'
-=======
-          java-version: '17'
->>>>>>> bapp-fork-latest/main
           distribution: 'temurin'
           
       - name: Get commit message
